@@ -1,0 +1,2 @@
+TODO:
+- Cada user le manda a la bbdd la posición en la que puso su XO
