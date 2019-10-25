@@ -41,15 +41,15 @@ public class DBConnection {
 		
 		if(username.length() < 5) {
 			
-			return "El nombre de usuario debe tener m·s de 5 car·cteres!";
+			return "El nombre de usuario debe tener m√°s de 5 car√°cteres!";
 			
 		} else if(username.length() > 16) {
 			
-			return "El nombre de usuario no puede tener m·s de 16 car·cteres!";
+			return "El nombre de usuario no puede tener m√°s de 16 car√°cteres!";
 			
 		} else if(password.length() < 4) {
 			
-			return "La contraseÒa debe tener al menos 5 car·cteres";
+			return "La contrase√±a debe tener al menos 5 carÔøΩcteres";
 			
 		} else {
 			
@@ -70,7 +70,7 @@ public class DBConnection {
 			} else {
 				
 				Utilities.logs("Nombre de usuario ya en uso.");
-				return "El nombre de usuario ya est· en uso.";
+				return "El nombre de usuario ya est√° en uso.";
 				
 			}
 			
@@ -84,15 +84,15 @@ public class DBConnection {
 		
 		if(username.length() < 5) {
 			
-			return "El nombre de usuario debe tener m·s de 5 car·cteres!";
+			return "El nombre de usuario debe tener m√°s de 5 car√°cteres!";
 			
 		} else if(username.length() > 16) {
 			
-			return "El nombre de usuario no puede tener m·s de 16 car·cteres!";
+			return "El nombre de usuario no puede tener m√°s de 16 car√°cteres!";
 			
 		} else if(password.length() < 4) {
 			
-			return "La contraseÒa debe tener al menos 5 car·cteres";
+			return "La contraseÔøΩa debe tener al menos 5 car√°cteres";
 			
 		} else {
 			
@@ -108,10 +108,10 @@ public class DBConnection {
 				if(authenticated)
 					return "Success";
 				else
-					return "El usuario o la contraseÒa no concuerdan!";
+					return "El usuario o la contrase√±a no concuerdan!";
 				
 			} catch (SQLException e) {
-				return "El usuario o la contraseÒa no concuerdan!";
+				return "El usuario o la contraseÔøΩa no concuerdan!";
 			}
 			
 		}

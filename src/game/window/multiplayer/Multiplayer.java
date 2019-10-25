@@ -106,7 +106,7 @@ public class Multiplayer extends JPanel {
 				botones[i][j].setEnabled(false);
 				
 				botones[i][j].addActionListener(new ActionListener() {
-					
+				int blockedButtonIterator = 0;
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						
@@ -119,6 +119,8 @@ public class Multiplayer extends JPanel {
 									Utilities.logs("Botón. X:" + b + " Y:" + a);
 									
 									botones[a][b].setEnabled(false);
+									botonesBlocked[blockedButtonIterator] = botones[a][b];
+									blockedButtonIterator++;
 									botones[a][b].setText(MultiplayerGameSelector.simbolo);
 									DBConnection.pasarTurno(b, a);
 									
@@ -147,7 +149,7 @@ public class Multiplayer extends JPanel {
 			@Override
 			public void run() {
 				
-				while(true) {
+				while(!win.equals("me") || !win.equals("opponent")) {
 					try {
 						
 						if(WindowManagement.modo.equals("Multiplayer")) {
@@ -195,9 +197,17 @@ public class Multiplayer extends JPanel {
 	
 	public void enableButtons(boolean e) {
 		
+		if(e == true && win.equals("me") || e == true && win.equals("opponent")) {
+			return;
+		}
+
 		for(int a = 0; a < botones.length; a++) {
 			
 			for(int b = 0; b < botones.length; b++) {
+				
+				try {
+					botonesBlocked[b].setEnabled(false);
+				} catch(Exception e1) {}
 				
 				if(botones[a][b].getText().equals("")) {
 					
@@ -349,7 +359,7 @@ public class Multiplayer extends JPanel {
 		if(win.equals("me")) {
 			
 			enableButtons(false);
-			System.out.println("gane"); //testear glitch botones blinking en el perdedor.
+			
 			
 		} else if(win.equals("opponent")) {
 			
@@ -362,6 +372,7 @@ public class Multiplayer extends JPanel {
 	
 	
 	private Botones[][] botones = new Botones[3][3];
+	private Botones[] botonesBlocked = new Botones[3];
 	private JPanel game, sideMenu;
 	private JButton salir = new JButton("Volver al menu");
 	private JLabel turno = new JLabel("    Turno  ");

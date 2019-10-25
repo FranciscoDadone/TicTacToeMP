@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.swing.JButton;
@@ -19,6 +21,8 @@ import javax.swing.JTextField;
 import game.util.Utilities;
 import game.window.WindowManagement;
 import game.window.multiplayer.mysqlConnection.DBConnection;
+import game.window.multiplayer.serverConnection.Packet;
+import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class MultiplayerLogin extends JPanel{
 	
@@ -27,7 +31,7 @@ public class MultiplayerLogin extends JPanel{
 	 */
 	private static final long serialVersionUID = 3296268066640427L;
 	public MultiplayerLogin() {
-		
+
 		GridBagConstraints success = new GridBagConstraints(), regBut = new GridBagConstraints(), loginBut=new GridBagConstraints(), userFieldRegister= new GridBagConstraints(), passFieldRegisterLayout = new GridBagConstraints(), passReg = new GridBagConstraints(), titulo = new GridBagConstraints(), tituloRegister = new GridBagConstraints(), user= new GridBagConstraints(), userRegister = new GridBagConstraints(), userField= new GridBagConstraints(), pass= new GridBagConstraints(), passField1 = new GridBagConstraints();
 		titulo.gridx = 0;
 		titulo.gridy=0;
@@ -164,11 +168,19 @@ public class MultiplayerLogin extends JPanel{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
-				dbReply = DBConnection.login(usuarioField.getText(), passField.getText());
-				if(dbReply != "Success")
-					JOptionPane.showMessageDialog(null, dbReply, "Error en el login", JOptionPane.ERROR_MESSAGE);
+				Packet paquete = new Packet();
+				paquete.setUsername(usuarioField.getText());
+				paquete.setPassword(passField.getText());
+				paquete.setDatabaseChange("USER AUTH");
+				new ServerConnection(paquete);
+				
+				serverReply = ServerConnection.getResponse();
+				if(!serverReply.equals("Success"))
+					JOptionPane.showMessageDialog(null, serverReply, "Error en el login", JOptionPane.ERROR_MESSAGE);
 				else
 					WindowManagement.render("MultiplayerGameSelector");
+				ServerConnection.close();
+				
 				
 			}
 			
@@ -181,13 +193,13 @@ public class MultiplayerLogin extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				
 				try {
-					dbReply = DBConnection.registerAccount(usuarioFieldRegister.getText(), passFieldRegister.getText());
-					Utilities.logs(dbReply);
+					serverReply = DBConnection.registerAccount(usuarioFieldRegister.getText(), passFieldRegister.getText());
+					Utilities.logs(serverReply);
 					
-					if(dbReply.equals("Success"))
+					if(serverReply.equals("Success"))
 						successMessage.setVisible(true);
 					else 
-						JOptionPane.showMessageDialog(null, dbReply, "Error al crear la cuenta", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, serverReply, "Error al crear la cuenta", JOptionPane.ERROR_MESSAGE);
 					
 				} catch (SQLException e1) {
 					Utilities.logs("Error al registrar el usuario");
@@ -204,6 +216,6 @@ public class MultiplayerLogin extends JPanel{
 	private JTextField usuarioField, usuarioFieldRegister;
 	private JPasswordField passField, passFieldRegister;
 	private JButton loginButton, registerButton;
-	private String dbReply;
+	private String serverReply;
 	
 }
