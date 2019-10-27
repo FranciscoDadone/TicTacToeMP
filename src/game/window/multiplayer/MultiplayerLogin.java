@@ -160,7 +160,7 @@ public class MultiplayerLogin extends JPanel{
 		
 		// FIN DE LA CREACI�N DE LA UI
 		
-		//BACKEND
+		//BACKEND CONNECTION
 		
 		loginButton.addActionListener(new ActionListener() {
 
@@ -171,16 +171,21 @@ public class MultiplayerLogin extends JPanel{
 				Packet paquete = new Packet();
 				paquete.setUsername(usuarioField.getText());
 				paquete.setPassword(passField.getText());
-				paquete.setDatabaseChange("USER AUTH");
+				paquete.setDatabaseChange("USER AUTH: login");
+				paquete.setGameID(ServerConnection.gameID);
 				new ServerConnection(paquete);
 				
 				serverReply = ServerConnection.getResponse();
 				if(!serverReply.equals("Success"))
 					JOptionPane.showMessageDialog(null, serverReply, "Error en el login", JOptionPane.ERROR_MESSAGE);
-				else
+				else {
 					WindowManagement.render("MultiplayerGameSelector");
+				}
 				ServerConnection.close();
 				
+				ServerConnection.getWins();
+				ServerConnection.wins = ServerConnection.getResponse();
+				ServerConnection.close();
 				
 			}
 			
@@ -193,28 +198,43 @@ public class MultiplayerLogin extends JPanel{
 			public void actionPerformed(ActionEvent e) {
 				
 				try {
-					serverReply = DBConnection.registerAccount(usuarioFieldRegister.getText(), passFieldRegister.getText());
-					Utilities.logs(serverReply);
 					
+					Packet paquete = new Packet();
+					paquete.setUsername(usuarioFieldRegister.getText());
+					paquete.setPassword(passFieldRegister.getText());
+					paquete.setDatabaseChange("USER AUTH: register");
+					paquete.setGameID(ServerConnection.gameID);
+					new ServerConnection(paquete);
+					
+					serverReply = ServerConnection.getResponse();
 					if(serverReply.equals("Success"))
 						successMessage.setVisible(true);
 					else 
 						JOptionPane.showMessageDialog(null, serverReply, "Error al crear la cuenta", JOptionPane.ERROR_MESSAGE);
-					
-				} catch (SQLException e1) {
+					ServerConnection.close();
+				} catch (Exception e1) {
 					Utilities.logs("Error al registrar el usuario");
 					e1.printStackTrace();
 				}
-				
+			
 			}
 			
 		});
 		
 	}
 	
+	public static String getUsername() {
+		return usuarioField.getText();
+	}
+	
+	public static String getPassword() {
+		return passField.getText();
+	}
+	
+	
 	private JLabel loginMainLabel, successMessage, registerPassLabel, registerMainLabel, LoginUsuarioLabel, RegisterUsuarioLabel, passLabel;
-	private JTextField usuarioField, usuarioFieldRegister;
-	private JPasswordField passField, passFieldRegister;
+	private static JTextField usuarioField, usuarioFieldRegister;
+	private static JPasswordField passField, passFieldRegister;
 	private JButton loginButton, registerButton;
 	private String serverReply;
 	

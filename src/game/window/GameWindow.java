@@ -5,6 +5,7 @@ import javax.swing.JFrame;
 
 import game.util.Utilities;
 import game.window.multiplayer.mysqlConnection.DBConnection;
+import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class GameWindow extends JFrame {
 
@@ -20,7 +21,7 @@ public class GameWindow extends JFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent e) {
-		    	DBConnection.deleteGame(DBConnection.gameID);
+		    	ServerConnection.deleteGame();
 		    	Utilities.logs("Cerrando...");
 		        e.getWindow().dispose();		        
 		    }

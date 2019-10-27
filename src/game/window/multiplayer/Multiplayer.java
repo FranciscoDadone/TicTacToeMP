@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 import game.util.Utilities;
 import game.window.Botones;
 import game.window.WindowManagement;
-import game.window.multiplayer.mysqlConnection.DBConnection;
+import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class Multiplayer extends JPanel {
 	
@@ -40,7 +40,7 @@ public class Multiplayer extends JPanel {
 		
 		JPanel panelSuperior = new JPanel();
 		panelSuperior.setBackground(new Color(47, 47, 47));
-		JLabel l = new JLabel();
+		l = new JLabel();
 		l.setForeground(Color.WHITE);
 		l.setFont(new Font("Impact", Font.ITALIC, 20));
 		panelSuperior.add(l);
@@ -77,10 +77,8 @@ public class Multiplayer extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				ServerConnection.deleteGame();
 				WindowManagement.render("menu");
-				DBConnection.deleteGame(DBConnection.gameID);
-				
 			}			
 			
 		});
@@ -122,7 +120,9 @@ public class Multiplayer extends JPanel {
 									botonesBlocked[blockedButtonIterator] = botones[a][b];
 									blockedButtonIterator++;
 									botones[a][b].setText(MultiplayerGameSelector.simbolo);
-									DBConnection.pasarTurno(b, a);
+
+									ServerConnection.pasarTurno(b, a);
+									
 									
 								}
 								
@@ -133,7 +133,6 @@ public class Multiplayer extends JPanel {
 						}
 						enableButtons(false);
 						checkWin();
-						
 					}	
 					
 				});
@@ -150,32 +149,31 @@ public class Multiplayer extends JPanel {
 			public void run() {
 				
 				while(!win.equals("me") || !win.equals("opponent")) {
+					
 					try {
-						
-						if(WindowManagement.modo.equals("Multiplayer")) {
-							
-							l.setText(" Jugando contra:  " + MultiplayerGameSelector.info.get(0) + "  ["+ MultiplayerGameSelector.info.get(3) +"] ");
-							
+					
+						if(WindowManagement.modo.equals("Multiplayer") && win.equals("")) {
+	
+							l.setText(" Jugando contra:  " + ServerConnection.info.get(0) + "  ["+ ServerConnection.info.get(3) +"] ");
 							try {
-								
-								int rivalX = Integer.parseInt(MultiplayerGameSelector.info.get(4)), rivalY = Integer.parseInt(MultiplayerGameSelector.info.get(5));
+								int rivalX = Integer.parseInt(ServerConnection.info.get(4)), rivalY = Integer.parseInt(ServerConnection.info.get(5));
 								
 								botones[rivalY][rivalX].setEnabled(false);
-								botones[rivalY][rivalX].setText(MultiplayerGameSelector.info.get(1));
+								botones[rivalY][rivalX].setText(Multiplayer.simboloRival);
 								
 							} catch(Exception e) {}
 							
 							
-							if(MultiplayerGameSelector.info.get(2).equals("JUEGA")) {
+							if(ServerConnection.info.get(2).equals("JUEGA")) {
 
 								enableButtons(false);
-								turnoXO.setText("   " + MultiplayerGameSelector.info.get(1) + "     ");
+								turnoXO.setText("   " + Multiplayer.simboloRival + "     ");
 								
 								
 							} else {
 								
 								enableButtons(true);
-								turnoXO.setText("   " + MultiplayerGameSelector.simbolo + "     ");
+								turnoXO.setText("   " + Multiplayer.simbolo + "     ");
 							}
 							
 						}
@@ -187,10 +185,44 @@ public class Multiplayer extends JPanel {
 					try {
 						Thread.sleep(1);
 					} catch (InterruptedException e) {}
-					checkWin();
+					try {
+						checkWin();
+					} catch(Exception e) {}
 				}
 			}
 			
+		}).start();
+		
+		new Thread(new Runnable() {
+			
+			public void run() {
+				
+				while(true) {
+					try {
+						Thread.sleep(0);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					if(WindowManagement.modo.equals("Multiplayer")) {
+						try {
+							ArrayList<String> a = new ArrayList<String>();
+							a = ServerConnection.getOtherPlayerInfo(ServerConnection.gameID);
+							
+							if(!a.get(1).equals("-") || !a.get(2).equals("-")) {
+								ServerConnection.info = a;
+								if(firstTimeSymbol) {
+									Multiplayer.simboloRival = ServerConnection.info.get(1);
+									firstTimeSymbol = false;
+								}
+							}
+						
+						} catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}			
 		}).start();
 		
 	}
@@ -222,13 +254,14 @@ public class Multiplayer extends JPanel {
 	}
 	
 	public void checkWin() {
-		
 		if(simboloRival == null) {
 			
-			if(MultiplayerGameSelector.simbolo.equals("X")) {
+			if(Multiplayer.simbolo.equals("X")) {
 				simboloRival = "O";
-			} else if(MultiplayerGameSelector.simbolo.equals("X")) {
+			} else if(Multiplayer.simbolo.equals("X")) {
 				simboloRival = "X";
+			} else {
+				simboloRival = null;
 			}
 			
 		}
@@ -359,11 +392,13 @@ public class Multiplayer extends JPanel {
 		if(win.equals("me")) {
 			
 			enableButtons(false);
+			l.setText(" ¡GANASTE! ");
 			
 			
 		} else if(win.equals("opponent")) {
 			
 			enableButtons(false);
+			l.setText(" GAME OVER. " + ServerConnection.info.get(0) + " ha ganado la partida.");
 			
 		}
 		
@@ -377,6 +412,8 @@ public class Multiplayer extends JPanel {
 	private JButton salir = new JButton("Volver al menu");
 	private JLabel turno = new JLabel("    Turno  ");
 	private JLabel turnoXO;
-	public static String simboloRival, win = "";
+	public static String simboloRival, simbolo, win = "";
+	private static boolean firstTimeSymbol = true;
+	private JLabel l;
 
 }

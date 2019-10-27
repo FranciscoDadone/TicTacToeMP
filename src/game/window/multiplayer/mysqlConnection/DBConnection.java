@@ -1,7 +1,6 @@
 package game.window.multiplayer.mysqlConnection;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -19,10 +18,7 @@ public class DBConnection {
 	public DBConnection() throws Exception {
 		
 		//Iniciando base de datos...
-    	Class.forName("com.mysql.cj.jdbc.Driver");
-    	String conextion_host = "jdbc:mysql://"+dbHost+":"+dbPort+"/"+dbNameUsername;
-		bbdd = DriverManager.getConnection(conextion_host, dbNameUsername, dbPassword);
-		statement = bbdd.createStatement();
+    	String conextion_host = "";
 		
 		try {
 			

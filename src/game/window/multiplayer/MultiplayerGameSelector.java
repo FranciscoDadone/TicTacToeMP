@@ -16,6 +16,7 @@ import javax.swing.JTextField;
 import game.util.Utilities;
 import game.window.WindowManagement;
 import game.window.multiplayer.mysqlConnection.DBConnection;
+import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class MultiplayerGameSelector extends JPanel {
 	
@@ -89,10 +90,10 @@ public class MultiplayerGameSelector extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
-				DBConnection.deleteGame(gameID);
+				ServerConnection.deleteGame();
 				random = new Random();
 				gameID = "" + (random.nextInt(90000000)+10000000);
-				DBConnection.createNewGame(gameID);
+				ServerConnection.createNewGame(gameID);
 				gameCode.setText(""+gameID);
 				spacer.setText("Copia el código y envíaselo a tu amigo para jugar con él! ");
 				
@@ -100,8 +101,8 @@ public class MultiplayerGameSelector extends JPanel {
 					simbolo = "X";
 				else
 					simbolo = "O";
-				DBConnection.cargarUserAPartida(gameID, DBConnection.username, simbolo);
-
+				ServerConnection.cargarUserAPartida(gameID, ServerConnection.username, simbolo);
+				MultiplayerGameSelector.playing = true;
 			}
 			
 		});
@@ -112,29 +113,35 @@ public class MultiplayerGameSelector extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				
 				gameID = gameCode.getText();
-				DBConnection.gameID = gameID;
-				info = DBConnection.getOtherPlayerInfo(gameID);
+				ServerConnection.gameID = gameID;
+				ServerConnection.getOtherPlayerInfo(gameID);
+				info = ServerConnection.getOtherPlayerInfo(gameID);
+				ServerConnection.close();
+				MultiplayerGameSelector.playing = true;
 				new Thread(new Runnable() {
 
 					@Override
 					public void run() {
-						while(simbolo.equals("null")) {
-							info = DBConnection.getOtherPlayerInfo(DBConnection.gameID);
+						while(simbolo.equals("null") || Multiplayer.simbolo.equals("null")) {
+							info = ServerConnection.getOtherPlayerInfo(gameID);
+							ServerConnection.close();
 							if(info.get(1).equals("O")) {
 								
 								simbolo = "X";
+								Multiplayer.simbolo = "X";
 								Multiplayer.simboloRival = "O";
 								
 							} else if(info.get(1).equals("X")) {
 								
 								simbolo = "O";
+								Multiplayer.simbolo = "O";
 								Multiplayer.simboloRival = "X";
 								
 							} else
 								simbolo = "null";
 							
-							DBConnection.cargarUserAPartida(gameID, DBConnection.username, simbolo);
-							
+							ServerConnection.cargarUserAPartida(gameID, ServerConnection.username, simbolo);
+
 						}
 						
 					}
@@ -151,25 +158,38 @@ public class MultiplayerGameSelector extends JPanel {
 			
 			@Override
 			public void run() {
-				while(true) { //Loop infinito para cargar las stats del jugador.
-					usuario.setText(DBConnection.username + "  ");
-					infoWins.setText(" Partidas ganadas: " + DBConnection.wins + "  ");
-					if(!WindowManagement.modo.equals("MultiplayerLogin")) {
-						try {
-							info = DBConnection.getOtherPlayerInfo(DBConnection.gameID);
-							readyPlayers = DBConnection.getReadyPlayers(gameID);
-							spacer2.setText("Jugadores listos para que empiece la partida " + readyPlayers + "/2 ");
-							if(readyPlayers.equals("2"))
-								startGame();
+				try {
+					while(true) { //Loop infinito para cargar las stats del jugador.
+						usuario.setText(ServerConnection.username + "  ");
+						infoWins.setText(" Partidas ganadas: " + ServerConnection.wins + "  ");
+						if(WindowManagement.modo.equals("MultiplayerGameSelector") && playing) {
+							try {
+								if(infoOn) {
+									info = ServerConnection.getOtherPlayerInfo(gameID);
+									ServerConnection.close();
+								}
+						
+								ServerConnection.getReadyPlayers(gameID);
+								readyPlayers = ServerConnection.getResponse();
+								ServerConnection.close();
+								
+								spacer2.setText("Jugadores listos para que empiece la partida " + readyPlayers + "/2 ");
+								if(readyPlayers.equals("2")) {
+									infoOn = true;
+									startGame();
+								}
+								
+								Thread.sleep(1000);
+								
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 							
-							Thread.sleep(1000);
-							
-						} catch (Exception e) {
-							e.printStackTrace();
 						}
 						
 					}
-				}
+				} catch(Exception e) {}
+				
 				
 			}
 			
@@ -222,5 +242,6 @@ public class MultiplayerGameSelector extends JPanel {
 	public static String simbolo = "null";
 	private boolean startGameLlamado = false;
 	public static ArrayList<String> info;
+	public static boolean playing = false, infoOn = false;
 	
 }
