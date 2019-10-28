@@ -2,7 +2,6 @@ package game.main;
 
 import game.util.Utilities;
 import game.window.GameWindow;
-import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class Main {
 	
@@ -11,7 +10,6 @@ public class Main {
 		Utilities.font("impact");
 		Utilities.font("arlrdbd");
 		new GameWindow().setVisible(true);;
-		
 		
 	}
 	

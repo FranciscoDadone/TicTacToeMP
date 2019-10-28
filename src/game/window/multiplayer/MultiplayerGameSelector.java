@@ -15,7 +15,6 @@ import javax.swing.JTextField;
 
 import game.util.Utilities;
 import game.window.WindowManagement;
-import game.window.multiplayer.mysqlConnection.DBConnection;
 import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class MultiplayerGameSelector extends JPanel {
@@ -34,8 +33,8 @@ public class MultiplayerGameSelector extends JPanel {
 		panelInfo.setBackground(new Color(39, 39, 39));
 		add(panelInfo, BorderLayout.PAGE_START);
 		
-		usuario = new JLabel(DBConnection.username);
-		infoWins = new JLabel(" Partidas ganadas: 16 ");
+		usuario = new JLabel(ServerConnection.username);
+		infoWins = new JLabel(" Partidas ganadas: 0 ");
 		usuario.setForeground(Color.WHITE);
 		infoWins.setForeground(Color.WHITE);
 		usuario.setFont(new Font("Impact", Font.ITALIC, 50));
@@ -104,7 +103,6 @@ public class MultiplayerGameSelector extends JPanel {
 				ServerConnection.cargarUserAPartida(gameID, ServerConnection.username, simbolo);
 				MultiplayerGameSelector.playing = true;
 			}
-			
 		});
 		
 		botonEntrar.addActionListener(new ActionListener() {
@@ -143,17 +141,10 @@ public class MultiplayerGameSelector extends JPanel {
 							ServerConnection.cargarUserAPartida(gameID, ServerConnection.username, simbolo);
 
 						}
-						
 					}
-
 				}).start();
-				
 			}
-			
 		});
-		
-		
-		
 		new Thread(new Runnable() {
 			
 			@Override
@@ -178,26 +169,15 @@ public class MultiplayerGameSelector extends JPanel {
 									infoOn = true;
 									startGame();
 								}
-								
 								Thread.sleep(1000);
-								
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
-							
 						}
-						
 					}
 				} catch(Exception e) {}
-				
-				
 			}
-			
-			
 		}).start();
-			
-		
-		
 	}
 	
 	public void startGame() {
@@ -222,25 +202,20 @@ public class MultiplayerGameSelector extends JPanel {
 					Utilities.logs("Partida '" + gameID + "' iniciada.");
 					
 					WindowManagement.render("Multiplayer");
-					
-					
-					
-					
+
 				}
-				
 			}).start();
-			
 		}		
 	}
 	
-	private JLabel usuario, infoWins, spacer, spacer2;
-	private JTextField gameCode;
+	public static JLabel usuario, infoWins, spacer, spacer2;
+	public static JTextField gameCode;
 	private JButton botonCrear, botonEntrar;
 	private Random random;
 	public static String readyPlayers = "0";
 	public static String gameID;
 	public static String simbolo = "null";
-	private boolean startGameLlamado = false;
+	public static boolean startGameLlamado = false;
 	public static ArrayList<String> info;
 	public static boolean playing = false, infoOn = false;
 	

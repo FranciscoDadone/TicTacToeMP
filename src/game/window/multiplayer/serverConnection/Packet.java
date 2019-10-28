@@ -2,6 +2,7 @@ package game.window.multiplayer.serverConnection;
 
 import java.io.Serializable;
 
+@SuppressWarnings("serial")
 public class Packet implements Serializable {
 
 	public void setUsername(String username) {

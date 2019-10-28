@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -14,9 +15,9 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import game.util.Utilities;
 import game.window.Botones;
 import game.window.WindowManagement;
+import game.window.multiplayer.serverConnection.Packet;
 import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class Multiplayer extends JPanel {
@@ -77,13 +78,12 @@ public class Multiplayer extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ServerConnection.deleteGame();
-				WindowManagement.render("menu");
+				gameReset();
+				WindowManagement.render("MultiplayerGameSelector");
 			}			
 			
 		});
-		
-		
+
 		this.add(sideMenu, BorderLayout.WEST);
 		
 		// --	/END/ SIDE MENU	--
@@ -108,22 +108,20 @@ public class Multiplayer extends JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						
+						enableButtons(false);
+						
 						for(int a = 0; a < botones.length; a++) {
-							
 							for(int b = 0; b < botones.length; b++) {
 								
 								if(e.getSource().equals(botones[a][b])) {
-									
-									Utilities.logs("Botón. X:" + b + " Y:" + a);
-									
+									// a es Y, b X
 									botones[a][b].setEnabled(false);
 									botonesBlocked[blockedButtonIterator] = botones[a][b];
 									blockedButtonIterator++;
 									botones[a][b].setText(MultiplayerGameSelector.simbolo);
-
+		
 									ServerConnection.pasarTurno(b, a);
-									
-									
+
 								}
 								
 								
@@ -131,7 +129,6 @@ public class Multiplayer extends JPanel {
 							}
 								
 						}
-						enableButtons(false);
 						checkWin();
 					}	
 					
@@ -147,7 +144,6 @@ public class Multiplayer extends JPanel {
 			
 			@Override
 			public void run() {
-				
 				while(!win.equals("me") || !win.equals("opponent")) {
 					
 					try {
@@ -163,24 +159,21 @@ public class Multiplayer extends JPanel {
 								
 							} catch(Exception e) {}
 							
-							
-							if(ServerConnection.info.get(2).equals("JUEGA")) {
-
-								enableButtons(false);
+							if(ServerConnection.info.get(2).equals("JUEGA")) { 
 								turnoXO.setText("   " + Multiplayer.simboloRival + "     ");
-								
-								
+								firstTime = true;
 							} else {
-								
-								enableButtons(true);
 								turnoXO.setText("   " + Multiplayer.simbolo + "     ");
+								if(firstTime) {
+									enableButtons(true);
+									firstTime = false;
+								}
 							}
+							
 							
 						}
 						
-					} catch(Exception e) {
-						e.printStackTrace();
-					}
+					} catch(Exception e) {}
 					
 					try {
 						Thread.sleep(1);
@@ -199,11 +192,8 @@ public class Multiplayer extends JPanel {
 				
 				while(true) {
 					try {
-						Thread.sleep(0);
-					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+						Thread.sleep(0); //fix a shitty bug...
+					} catch (InterruptedException e1) {}
 					if(WindowManagement.modo.equals("Multiplayer")) {
 						try {
 							ArrayList<String> a = new ArrayList<String>();
@@ -215,10 +205,13 @@ public class Multiplayer extends JPanel {
 									Multiplayer.simboloRival = ServerConnection.info.get(1);
 									firstTimeSymbol = false;
 								}
-							}
-						
+							}	
 						} catch(Exception e) {
-							e.printStackTrace();
+							Packet a = new Packet();
+							a.setUsername(ServerConnection.username);
+							a.setPassword(ServerConnection.password);
+							a.setGameID(ServerConnection.gameID);
+							new ServerConnection(a);
 						}
 					}
 				}
@@ -227,8 +220,7 @@ public class Multiplayer extends JPanel {
 		
 	}
 	
-	public void enableButtons(boolean e) {
-		
+	public static void enableButtons(boolean e) {
 		if(e == true && win.equals("me") || e == true && win.equals("opponent")) {
 			return;
 		}
@@ -393,6 +385,16 @@ public class Multiplayer extends JPanel {
 			
 			enableButtons(false);
 			l.setText(" ¡GANASTE! ");
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {}
+			
+			if(ftW) {
+				
+				ftW = false;
+				ServerConnection.aumentarWins();
+				
+			}
 			
 			
 		} else if(win.equals("opponent")) {
@@ -404,10 +406,40 @@ public class Multiplayer extends JPanel {
 		
 	}
 	
+	public void gameReset() {
+		ServerConnection.deleteGame();
+		
+		Arrays.fill(botonesBlocked, null);
+		simbolo = "";
+		simboloRival = null;
+		win = "";
+		firstTimeSymbol = true;
+		ServerConnection.f = true;
+		ServerConnection.error = false;
+		ServerConnection.info.removeAll(ServerConnection.info);
+		ServerConnection.gameID = "";
+		MultiplayerGameSelector.gameID = "";
+		MultiplayerGameSelector.info.removeAll(MultiplayerGameSelector.info);
+		MultiplayerGameSelector.readyPlayers = "0";
+		MultiplayerGameSelector.simbolo = "null";
+		MultiplayerGameSelector.startGameLlamado = false;
+		MultiplayerGameSelector.gameCode.setText("00000000");
+		MultiplayerGameSelector.playing = false;
+		MultiplayerGameSelector.infoOn = false;
+		MultiplayerGameSelector.spacer.setText("Pegá un código o crea una nueva partida!");
+		firstTime = true;
+		
+		for(int i = 0; i < botones.length; i++) {
+			for(int j = 0; j < botones.length; j++) {
+				botones[i][j].setText("");
+				botones[i][j].setEnabled(true);
+				botones[i][j].setBackground(new Color(47, 47, 47));
+			}
+		}
+	}
 	
-	
-	private Botones[][] botones = new Botones[3][3];
-	private Botones[] botonesBlocked = new Botones[3];
+	private static Botones[][] botones = new Botones[3][3];
+	private static Botones[] botonesBlocked = new Botones[3];
 	private JPanel game, sideMenu;
 	private JButton salir = new JButton("Volver al menu");
 	private JLabel turno = new JLabel("    Turno  ");
@@ -415,5 +447,6 @@ public class Multiplayer extends JPanel {
 	public static String simboloRival, simbolo, win = "";
 	private static boolean firstTimeSymbol = true;
 	private JLabel l;
+	public static boolean firstTime = true, ftW = true;
 
 }

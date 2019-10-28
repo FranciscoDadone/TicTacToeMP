@@ -4,7 +4,6 @@ import java.awt.Toolkit;
 import javax.swing.JFrame;
 
 import game.util.Utilities;
-import game.window.multiplayer.mysqlConnection.DBConnection;
 import game.window.multiplayer.serverConnection.ServerConnection;
 
 public class GameWindow extends JFrame {

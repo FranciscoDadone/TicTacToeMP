@@ -6,6 +6,7 @@ import game.util.Utilities;
 import game.window.multiplayer.Multiplayer;
 import game.window.multiplayer.MultiplayerGameSelector;
 import game.window.multiplayer.MultiplayerLogin;
+import game.window.multiplayer.serverConnection.ServerConnection;
 import game.window.singleplayer.Singleplayer;
 
 public class WindowManagement {
@@ -50,6 +51,12 @@ public class WindowManagement {
 			jframe.setTitle("TicTacToe - Jugando multiplayer");
 			Utilities.logs("Jugando multiplayer");
 			
+			if(!ServerConnection.info.get(2).equals("JUEGA")) {
+				Multiplayer.enableButtons(true);
+			} else {
+				Multiplayer.enableButtons(false);
+			}
+			
 		} else if(modo == "MultiplayerLogin") {
 			
 			mainMenu.setVisible(false);
@@ -61,6 +68,7 @@ public class WindowManagement {
 			
 		} else if(modo == "MultiplayerGameSelector") {
 			
+			mp.setVisible(false);
 			mainMenu.setVisible(false);
 			mpL.setVisible(false);
 			jframe.add(mpGS);

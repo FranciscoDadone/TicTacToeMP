@@ -9,16 +9,36 @@ import java.util.ArrayList;
 
 import game.util.Utilities;
 import game.window.multiplayer.Multiplayer;
+import game.window.multiplayer.MultiplayerLogin;
 
 public class ServerConnection {
 	
 	public ServerConnection(Packet paquete) {
 		
+		String completeIP = MultiplayerLogin.IPField.getText();
+		String ip = "", port = "";
+		boolean portTime = false;
+		
+		for(int i = 0; i < completeIP.length(); i++) {
+			
+			if(completeIP.charAt(i) == ':') {
+				portTime = true;
+			}else if(portTime) {
+				port+=completeIP.charAt(i);
+			} else {
+				ip+=completeIP.charAt(i);
+			}
+			
+		}
+		
+		ServerConnection.serverIP = ip;
+		ServerConnection.port = Integer.parseInt(port);
+		
 		username = paquete.getUsername();
 		password = paquete.getPassword();
 		
 		try {
-			s = new Socket(serverIP, 9999);
+			s = new Socket(serverIP, ServerConnection.port);
 		}catch(Exception e) {
 			Utilities.logs("Error al conectar con el servidor 500");
 			e.printStackTrace();
@@ -152,13 +172,22 @@ public class ServerConnection {
 		new ServerConnection(paquete);
 		ServerConnection.close();
 	}
-
+	
+	public static void aumentarWins() {
+		
+		Packet paquete = new Packet();
+		paquete.setUsername(username);
+		paquete.setDatabaseChange("INFO: aumentarWins");
+		new ServerConnection(paquete);
+		ServerConnection.close();
+		
+	}
 
 	private static Socket s;
-	private static boolean error = false;
-	public static String serverIP = "181.114.48.92", username, password, gameID, wins;
+	public static boolean error = false;
+	public static String serverIP = "", username, password, gameID, wins;
 	public static ArrayList<String> info = new ArrayList<String>();
-	@SuppressWarnings("unused") //  está siendo usada
-	private static boolean f = true;
+	public static boolean f = true;
+	public static int port;
 
 }
