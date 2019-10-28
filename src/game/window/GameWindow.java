@@ -20,7 +20,9 @@ public class GameWindow extends JFrame {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 		    @Override
 		    public void windowClosing(java.awt.event.WindowEvent e) {
-		    	ServerConnection.deleteGame();
+		    	try {
+		    		ServerConnection.deleteGame();
+		    	} catch(Exception e1) {}
 		    	Utilities.logs("Cerrando...");
 		        e.getWindow().dispose();		        
 		    }
